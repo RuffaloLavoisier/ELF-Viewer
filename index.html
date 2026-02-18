@@ -1,642 +1,1239 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ELF Binary Analyzer Pro</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:Consolas,Monaco,monospace;background:#0d1117;color:#c9d1d9;line-height:1.6}.container{max-width:1900px;margin:0 auto;padding:20px}header{background:linear-gradient(135deg,#1f6feb,#0969da);padding:30px;border-radius:10px;margin-bottom:30px;text-align:center;position:relative}h1{font-size:2.5em}.lang-toggle{position:absolute;top:20px;right:30px;display:flex;gap:5px;background:rgba(255,255,255,.1);padding:5px;border-radius:8px}.lang-btn{background:0 0;color:rgba(255,255,255,.7);border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700;transition:all .3s}.lang-btn:hover{color:#fff;background:rgba(255,255,255,.1)}.lang-btn.active{background:#fff;color:#1f6feb}.upload-section{background:#161b22;padding:40px;border-radius:10px;border:2px dashed #30363d;text-align:center;margin-bottom:30px}.upload-section:hover{border-color:#1f6feb}.upload-button{background:#1f6feb;color:#fff;padding:12px 30px;border:none;border-radius:6px;cursor:pointer;font-size:16px;font-weight:700}.search-bar{background:#161b22;padding:15px;border-radius:8px;margin-bottom:20px;display:none;border:1px solid #30363d}.search-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.search-input-group{flex:1;min-width:300px;display:flex;gap:5px}.search-input{flex:1;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-family:Consolas,monospace;font-size:14px}.search-input:focus{outline:none;border-color:#1f6feb}.search-mode{display:flex;gap:5px;background:#0d1117;padding:4px;border-radius:6px}.mode-btn{background:0 0;border:none;color:#8b949e;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700}.mode-btn:hover{color:#c9d1d9}.mode-btn.active{background:#1f6feb;color:#fff}.search-btn{background:#1f6feb;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700}.search-nav{display:flex;gap:5px}.nav-btn{background:#21262d;border:none;color:#c9d1d9;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px}.nav-btn:hover{background:#30363d}.nav-btn:disabled{opacity:.5;cursor:not-allowed}.search-results{color:#8b949e;font-size:13px;padding:5px 0}.loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(13,17,23,.95);display:none;justify-content:center;align-items:center;z-index:9999}.loading-overlay.active{display:flex}.loading-content{text-align:center;background:#161b22;padding:40px;border-radius:15px;border:2px solid #1f6feb;box-shadow:0 10px 40px rgba(31,111,235,.3);max-width:500px}.loading-spinner{width:60px;height:60px;border:4px solid #30363d;border-top:4px solid #1f6feb;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}.loading-text{font-size:1.2em;color:#58a6ff;margin-bottom:20px;font-weight:700}.loading-subtext{color:#8b949e;font-size:.9em;margin-bottom:25px}.progress-bar-container{width:100%;height:8px;background:#21262d;border-radius:4px;overflow:hidden;margin-bottom:15px}.progress-bar{height:100%;background:linear-gradient(90deg,#1f6feb,#58a6ff);border-radius:4px;transition:width .3s ease;width:0}.progress-stats{display:flex;justify-content:space-between;color:#8b949e;font-size:.85em}.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.panel{background:#161b22;border-radius:10px;padding:20px;border:1px solid #30363d}.panel h2{color:#58a6ff;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #21262d}.tabs{display:flex;gap:5px;margin-bottom:20px;border-bottom:2px solid #21262d;flex-wrap:wrap}.tab{padding:8px 12px;background:0 0;border:none;color:#8b949e;cursor:pointer;border-bottom:3px solid transparent;font-size:12px;font-weight:700}.tab:hover{color:#c9d1d9}.tab.active{color:#58a6ff;border-bottom-color:#1f6feb}.tab-content{display:none;max-height:550px;overflow-y:auto}.tab-content.active{display:block}.section{margin-bottom:20px;padding:15px;background:#0d1117;border-radius:6px;border-left:4px solid #1f6feb}.section h3{color:#58a6ff;margin-bottom:15px;font-size:1em}.field{display:grid;grid-template-columns:180px 1fr 100px;padding:6px 10px;margin:3px 0;background:#161b22;border-radius:4px;cursor:pointer;font-size:.9em}.field:hover{background:#1c2128;transform:translateX(5px)}.field.highlighted{background:#1f6feb33;border-left:3px solid #58a6ff}.field-name{color:#79c0ff;font-weight:700}.field-value{color:#a5d6ff;word-break:break-all}.field-offset{color:#8b949e;font-size:.85em;text-align:right}.hex-viewer{background:#0d1117;padding:15px;border-radius:6px;font-size:13px;max-height:600px;overflow:auto}.hex-line{display:flex;gap:15px;padding:2px 0}.hex-offset{color:#8b949e;min-width:80px}.hex-bytes{display:flex;gap:6px;flex:1}.hex-byte{cursor:pointer;padding:2px 3px;border-radius:3px}.hex-byte:hover{background:#1f6feb44}.hex-byte.selected{background:#1f6feb;color:#fff;font-weight:700}.hex-byte.search-match{background:#d29922;color:#fff}.hex-byte.search-current{background:#2ea043;color:#fff;font-weight:700}.hex-ascii{color:#7ee787;min-width:180px;letter-spacing:2px}.ascii-char{cursor:pointer}.ascii-char.selected{background:#1f6feb;color:#fff}.ascii-char.search-match{background:#d29922;color:#fff}.ascii-char.search-current{background:#2ea043;color:#fff}table{width:100%;border-collapse:collapse;font-size:.85em}th{background:#21262d;padding:8px;text-align:left;color:#58a6ff;position:sticky;top:0}td{padding:6px 8px;border-bottom:1px solid #21262d}tr:hover{background:#161b22;cursor:pointer}.badge{background:#1f6feb;color:#fff;padding:2px 8px;border-radius:12px;font-size:.7em;font-weight:700}.badge.success{background:#2ea043}.badge.warning{background:#d29922}.badge.error{background:#da3633}.info-bar{background:#21262d;padding:10px 15px;border-radius:6px;margin-bottom:15px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:15px;font-size:.9em}.info-item{display:flex;align-items:center;gap:8px}.info-label{color:#8b949e}.info-value{color:#58a6ff;font-weight:700}.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}.stat-card{background:#161b22;padding:15px;border-radius:6px;border-left:4px solid #1f6feb}.stat-card h4{color:#79c0ff;font-size:.85em;margin-bottom:8px}.stat-value{color:#58a6ff;font-size:1.4em;font-weight:bold}.data-preview{background:#0d1117;padding:10px;border-radius:4px;margin-top:10px;font-size:.8em;max-height:120px;overflow-y:auto}.warning-box{background:#d2992233;border:1px solid #d29922;color:#d29922;padding:12px;border-radius:6px;margin-bottom:15px}@media (max-width:1200px){.main-grid{grid-template-columns:1fr}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELF Binary Analyzer Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: Consolas, Monaco, monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            line-height: 1.6
+        }
+
+        .container {
+            max-width: 1900px;
+            margin: 0 auto;
+            padding: 20px
+        }
+
+        header {
+            background: linear-gradient(135deg, #1f6feb, #0969da);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative
+        }
+
+        h1 {
+            font-size: 2.5em
+        }
+
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 5px;
+            background: rgba(255, 255, 255, .1);
+            padding: 5px;
+            border-radius: 8px
+        }
+
+        .lang-btn {
+            background: 0 0;
+            color: rgba(255, 255, 255, .7);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all .3s
+        }
+
+        .lang-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, .1)
+        }
+
+        .lang-btn.active {
+            background: #fff;
+            color: #1f6feb
+        }
+
+        .upload-section {
+            background: #161b22;
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px dashed #30363d;
+            text-align: center;
+            margin-bottom: 30px
+        }
+
+        .upload-section:hover {
+            border-color: #1f6feb
+        }
+
+        .upload-button {
+            background: #1f6feb;
+            color: #fff;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700
+        }
+
+        .search-bar {
+            background: #161b22;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid #30363d
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        .search-input-group {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            gap: 5px
+        }
+
+        .search-input {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: Consolas, monospace;
+            font-size: 14px
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1f6feb
+        }
+
+        .search-mode {
+            display: flex;
+            gap: 5px;
+            background: #0d1117;
+            padding: 4px;
+            border-radius: 6px
+        }
+
+        .mode-btn {
+            background: 0 0;
+            border: none;
+            color: #8b949e;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .mode-btn:hover {
+            color: #c9d1d9
+        }
+
+        .mode-btn.active {
+            background: #1f6feb;
+            color: #fff
+        }
+
+        .search-btn {
+            background: #1f6feb;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700
+        }
+
+        .search-nav {
+            display: flex;
+            gap: 5px
+        }
+
+        .nav-btn {
+            background: #21262d;
+            border: none;
+            color: #c9d1d9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px
+        }
+
+        .nav-btn:hover {
+            background: #30363d
+        }
+
+        .nav-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed
+        }
+
+        .search-results {
+            color: #8b949e;
+            font-size: 13px;
+            padding: 5px 0
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 17, 23, .95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999
+        }
+
+        .loading-overlay.active {
+            display: flex
+        }
+
+        .loading-content {
+            text-align: center;
+            background: #161b22;
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid #1f6feb;
+            box-shadow: 0 10px 40px rgba(31, 111, 235, .3);
+            max-width: 500px
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #30363d;
+            border-top: 4px solid #1f6feb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg)
+            }
+
+            100% {
+                transform: rotate(360deg)
+            }
+        }
+
+        .loading-text {
+            font-size: 1.2em;
+            color: #58a6ff;
+            margin-bottom: 20px;
+            font-weight: 700
+        }
+
+        .loading-subtext {
+            color: #8b949e;
+            font-size: .9em;
+            margin-bottom: 25px
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #21262d;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #1f6feb, #58a6ff);
+            border-radius: 4px;
+            transition: width .3s ease;
+            width: 0
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            color: #8b949e;
+            font-size: .85em
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px
+        }
+
+        .panel {
+            background: #161b22;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #30363d
+        }
+
+        .panel h2 {
+            color: #58a6ff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #21262d
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #21262d;
+            flex-wrap: wrap
+        }
+
+        .tab {
+            padding: 8px 12px;
+            background: 0 0;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .tab:hover {
+            color: #c9d1d9
+        }
+
+        .tab.active {
+            color: #58a6ff;
+            border-bottom-color: #1f6feb
+        }
+
+        .tab-content {
+            display: none;
+            max-height: 550px;
+            overflow-y: auto
+        }
+
+        .tab-content.active {
+            display: block
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #0d1117;
+            border-radius: 6px;
+            border-left: 4px solid #1f6feb
+        }
+
+        .section h3 {
+            color: #58a6ff;
+            margin-bottom: 15px;
+            font-size: 1em
+        }
+
+        .field {
+            display: grid;
+            grid-template-columns: 180px 1fr 100px;
+            padding: 6px 10px;
+            margin: 3px 0;
+            background: #161b22;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: .9em
+        }
+
+        .field:hover {
+            background: #1c2128;
+            transform: translateX(5px)
+        }
+
+        .field.highlighted {
+            background: #1f6feb33;
+            border-left: 3px solid #58a6ff
+        }
+
+        .field-name {
+            color: #79c0ff;
+            font-weight: 700
+        }
+
+        .field-value {
+            color: #a5d6ff;
+            word-break: break-all
+        }
+
+        .field-offset {
+            color: #8b949e;
+            font-size: .85em;
+            text-align: right
+        }
+
+        .hex-viewer {
+            background: #0d1117;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            max-height: 600px;
+            overflow: auto
+        }
+
+        .hex-line {
+            display: flex;
+            gap: 15px;
+            padding: 2px 0
+        }
+
+        .hex-offset {
+            color: #8b949e;
+            min-width: 80px
+        }
+
+        .hex-bytes {
+            display: flex;
+            gap: 6px;
+            flex: 1
+        }
+
+        .hex-byte {
+            cursor: pointer;
+            padding: 2px 3px;
+            border-radius: 3px
+        }
+
+        .hex-byte:hover {
+            background: #1f6feb44
+        }
+
+        .hex-byte.selected {
+            background: #1f6feb;
+            color: #fff;
+            font-weight: 700
+        }
+
+        .hex-byte.search-match {
+            background: #d29922;
+            color: #fff
+        }
+
+        .hex-byte.search-current {
+            background: #2ea043;
+            color: #fff;
+            font-weight: 700
+        }
+
+        .hex-ascii {
+            color: #7ee787;
+            min-width: 180px;
+            letter-spacing: 2px
+        }
+
+        .ascii-char {
+            cursor: pointer
+        }
+
+        .ascii-char.selected {
+            background: #1f6feb;
+            color: #fff
+        }
+
+        .ascii-char.search-match {
+            background: #d29922;
+            color: #fff
+        }
+
+        .ascii-char.search-current {
+            background: #2ea043;
+            color: #fff
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .85em
+        }
+
+        th {
+            background: #21262d;
+            padding: 8px;
+            text-align: left;
+            color: #58a6ff;
+            position: sticky;
+            top: 0
+        }
+
+        td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #21262d
+        }
+
+        tr:hover {
+            background: #161b22;
+            cursor: pointer
+        }
+
+        .badge {
+            background: #1f6feb;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: .7em;
+            font-weight: 700
+        }
+
+        .badge.success {
+            background: #2ea043
+        }
+
+        .badge.warning {
+            background: #d29922
+        }
+
+        .badge.error {
+            background: #da3633
+        }
+
+        .info-bar {
+            background: #21262d;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: .9em
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .info-label {
+            color: #8b949e
+        }
+
+        .info-value {
+            color: #58a6ff;
+            font-weight: 700
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px
+        }
+
+        .stat-card {
+            background: #161b22;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #1f6feb
+        }
+
+        .stat-card h4 {
+            color: #79c0ff;
+            font-size: .85em;
+            margin-bottom: 8px
+        }
+
+        .stat-value {
+            color: #58a6ff;
+            font-size: 1.4em;
+            font-weight: bold
+        }
+
+        .data-preview {
+            background: #0d1117;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: .8em;
+            max-height: 120px;
+            overflow-y: auto
+        }
+
+        .warning-box {
+            background: #d2992233;
+            border: 1px solid #d29922;
+            color: #d29922;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px
+        }
+
+        @media (max-width:1200px) {
+            .main-grid {
+                grid-template-columns: 1fr
+            }
+        }
+    </style>
 </head>
+
 <body>
-<div class="loading-overlay" id="loadingOverlay">
-<div class="loading-content">
-<div class="loading-spinner"></div>
-<div class="loading-text" id="loadingText">Loading ELF File...</div>
-<div class="loading-subtext" id="loadingSubtext">Please wait while we analyze the binary</div>
-<div class="progress-bar-container">
-<div class="progress-bar" id="progressBar"></div>
-</div>
-<div class="progress-stats">
-<span id="progressPercent">0%</span>
-<span id="progressStep">Initializing...</span>
-</div>
-</div>
-</div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">Loading ELF File...</div>
+            <div class="loading-subtext" id="loadingSubtext">Please wait while we analyze the binary</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-stats">
+                <span id="progressPercent">0%</span>
+                <span id="progressStep">Initializing...</span>
+            </div>
+        </div>
+    </div>
 
-<div class="container">
-<header>
-<div class="lang-toggle">
-<button class="lang-btn active" onclick="setLanguage('en')">EN</button>
-<button class="lang-btn" onclick="setLanguage('ko')">한글</button>
-</div>
-<h1>🔍 ELF Binary Analyzer Pro</h1>
-<p>Advanced Parser with Search & Full Analysis</p>
-</header>
-<div class="upload-section" id="uploadSection">
-<h2>Upload ELF Binary</h2>
-<p style="margin:15px 0;color:#8b949e">Drag & drop or click to select</p>
-<input type="file" id="fileInput" accept="*" style="display:none">
-<button class="upload-button" onclick="document.getElementById('fileInput').click()">📁 Select File</button>
-</div>
-<div id="results" style="display:none">
-<div class="search-bar" id="searchBar">
-<div class="search-controls">
-<div class="search-input-group">
-<input type="text" class="search-input" id="searchInput" placeholder="Search hex bytes (7F 45 4C 46), string, or offset (0x1000)">
-<div class="search-mode">
-<button class="mode-btn active" data-mode="hex" onclick="setSearchMode('hex')">HEX</button>
-<button class="mode-btn" data-mode="string" onclick="setSearchMode('string')">STRING</button>
-<button class="mode-btn" data-mode="offset" onclick="setSearchMode('offset')">OFFSET</button>
-</div>
-</div>
-<button class="search-btn" onclick="performSearch()">🔍 Search</button>
-<div class="search-nav">
-<button class="nav-btn" onclick="previousMatch()" id="prevBtn" disabled>◀ Prev</button>
-<button class="nav-btn" onclick="nextMatch()" id="nextBtn" disabled>Next ▶</button>
-</div>
-</div>
-<div class="search-results" id="searchResults"></div>
-</div>
-<div class="info-bar">
-<div class="info-item"><span class="info-label">File:</span><span class="info-value" id="fileName"></span></div>
-<div class="info-item"><span class="info-label">Size:</span><span class="info-value" id="fileSize"></span></div>
-<div class="info-item"><span class="info-label">Arch:</span><span class="info-value" id="fileArch"></span></div>
-<div class="info-item"><span class="info-label">Offset:</span><span class="info-value" id="selectedOffset">-</span></div>
-</div>
-<div class="main-grid">
-<div class="panel">
-<h2>📋 Structures</h2>
-<div class="tabs">
-<button class="tab active" onclick="switchTab('elf-header')">Header</button>
-<button class="tab" onclick="switchTab('program-headers')">Programs</button>
-<button class="tab" onclick="switchTab('section-headers')">Sections</button>
-<button class="tab" onclick="switchTab('symbols')">Symbols</button>
-<button class="tab" onclick="switchTab('strings')">Strings</button>
-<button class="tab" onclick="switchTab('statistics')">Stats</button>
-</div>
-<div id="elf-header" class="tab-content active"></div>
-<div id="program-headers" class="tab-content"></div>
-<div id="section-headers" class="tab-content"></div>
-<div id="symbols" class="tab-content"></div>
-<div id="strings" class="tab-content"></div>
-<div id="statistics" class="tab-content"></div>
-</div>
-<div class="panel">
-<h2>🔢 Hex Dump</h2>
-<div class="hex-viewer" id="hexViewer"></div>
-</div>
-</div>
-</div>
-</div>
-<script>
-let elfData=null,parsedElf=null,currentLanguage='en',searchMode='hex',searchMatches=[],currentMatchIndex=-1;
-const fileInput=document.getElementById('fileInput'),uploadSection=document.getElementById('uploadSection');
-fileInput.addEventListener('change',e=>e.target.files[0]&&handleFile(e.target.files[0]));
-uploadSection.addEventListener('dragover',e=>{e.preventDefault();uploadSection.classList.add('dragover')});
-uploadSection.addEventListener('dragleave',()=>uploadSection.classList.remove('dragover'));
-uploadSection.addEventListener('drop',e=>{e.preventDefault();uploadSection.classList.remove('dragover');e.dataTransfer.files[0]&&handleFile(e.dataTransfer.files[0])});
+    <div class="container">
+        <header>
+            <div class="lang-toggle">
+                <button class="lang-btn active" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn" onclick="setLanguage('ko')">한글</button>
+            </div>
+            <h1>🔍 ELF Binary Analyzer Pro</h1>
+            <p>Advanced Parser with Search & Full Analysis</p>
+        </header>
+        <div class="upload-section" id="uploadSection">
+            <h2>Upload ELF Binary</h2>
+            <p style="margin:15px 0;color:#8b949e">Drag & drop or click to select</p>
+            <input type="file" id="fileInput" accept="*" style="display:none">
+            <button class="upload-button" onclick="document.getElementById('fileInput').click()">📁 Select File</button>
+        </div>
+        <div id="results" style="display:none">
+            <div class="search-bar" id="searchBar">
+                <div class="search-controls">
+                    <div class="search-input-group">
+                        <input type="text" class="search-input" id="searchInput"
+                            placeholder="Search hex bytes (7F 45 4C 46), string, or offset (0x1000)">
+                        <div class="search-mode">
+                            <button class="mode-btn active" data-mode="hex" onclick="setSearchMode('hex')">HEX</button>
+                            <button class="mode-btn" data-mode="string"
+                                onclick="setSearchMode('string')">STRING</button>
+                            <button class="mode-btn" data-mode="offset"
+                                onclick="setSearchMode('offset')">OFFSET</button>
+                        </div>
+                    </div>
+                    <button class="search-btn" onclick="performSearch()">🔍 Search</button>
+                    <div class="search-nav">
+                        <button class="nav-btn" onclick="previousMatch()" id="prevBtn" disabled>◀ Prev</button>
+                        <button class="nav-btn" onclick="nextMatch()" id="nextBtn" disabled>Next ▶</button>
+                    </div>
+                </div>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+            <div class="info-bar">
+                <div class="info-item"><span class="info-label">File:</span><span class="info-value"
+                        id="fileName"></span></div>
+                <div class="info-item"><span class="info-label">Size:</span><span class="info-value"
+                        id="fileSize"></span></div>
+                <div class="info-item"><span class="info-label">Arch:</span><span class="info-value"
+                        id="fileArch"></span></div>
+                <div class="info-item"><span class="info-label">Offset:</span><span class="info-value"
+                        id="selectedOffset">-</span></div>
+            </div>
+            <div class="main-grid">
+                <div class="panel">
+                    <h2>📋 Structures</h2>
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('elf-header')">Header</button>
+                        <button class="tab" onclick="switchTab('program-headers')">Programs</button>
+                        <button class="tab" onclick="switchTab('section-headers')">Sections</button>
+                        <button class="tab" onclick="switchTab('symbols')">Symbols</button>
+                        <button class="tab" onclick="switchTab('strings')">Strings</button>
+                        <button class="tab" onclick="switchTab('statistics')">Stats</button>
+                    </div>
+                    <div id="elf-header" class="tab-content active"></div>
+                    <div id="program-headers" class="tab-content"></div>
+                    <div id="section-headers" class="tab-content"></div>
+                    <div id="symbols" class="tab-content"></div>
+                    <div id="strings" class="tab-content"></div>
+                    <div id="statistics" class="tab-content"></div>
+                </div>
+                <div class="panel">
+                    <h2>🔢 Hex Dump</h2>
+                    <div class="hex-viewer" id="hexViewer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let elfData = null, parsedElf = null, currentLanguage = 'en', searchMode = 'hex', searchMatches = [], currentMatchIndex = -1;
+        const fileInput = document.getElementById('fileInput'), uploadSection = document.getElementById('uploadSection');
+        fileInput.addEventListener('change', e => e.target.files[0] && handleFile(e.target.files[0]));
+        uploadSection.addEventListener('dragover', e => { e.preventDefault(); uploadSection.classList.add('dragover') });
+        uploadSection.addEventListener('dragleave', () => uploadSection.classList.remove('dragover'));
+        uploadSection.addEventListener('drop', e => { e.preventDefault(); uploadSection.classList.remove('dragover'); e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]) });
 
-function showLoading(text,subtext,percent){
-document.getElementById('loadingOverlay').classList.add('active');
-document.getElementById('loadingText').textContent=text;
-document.getElementById('loadingSubtext').textContent=subtext;
-document.getElementById('progressBar').style.width=percent+'%';
-document.getElementById('progressPercent').textContent=percent+'%';
-}
+        function showLoading(text, subtext, percent) {
+            document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingSubtext').textContent = subtext;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = percent + '%';
+        }
 
-function updateProgress(percent,step){
-document.getElementById('progressBar').style.width=percent+'%';
-document.getElementById('progressPercent').textContent=percent+'%';
-document.getElementById('progressStep').textContent=step;
-}
+        function updateProgress(percent, step) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('progressStep').textContent = step;
+        }
 
-function hideLoading(){
-document.getElementById('loadingOverlay').classList.remove('active');
-}
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
 
-async function handleFile(file){
-document.getElementById('fileName').textContent=file.name;
-document.getElementById('fileSize').textContent=formatBytes(file.size);
-showLoading('Reading File...','Loading binary data into memory',10);
-const reader=new FileReader();
-reader.onload=async function(e){
-updateProgress(20,'File loaded, validating ELF format...');
-await sleep(100);
-elfData=new Uint8Array(e.target.result);
-try{
-updateProgress(30,'Parsing ELF header...');
-await sleep(100);
-parsedElf=await parseELFAsync(elfData);
-updateProgress(90,'Rendering interface...');
-await sleep(100);
-displayResults();
-updateProgress(100,'Complete!');
-await sleep(200);
-hideLoading();
-document.getElementById('results').style.display='block';
-document.getElementById('searchBar').style.display='block';
-}catch(err){
-hideLoading();
-alert('Error: '+err.message);
-}
-};
-reader.readAsArrayBuffer(file);
-}
+        async function handleFile(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatBytes(file.size);
+            showLoading('Reading File...', 'Loading binary data into memory', 10);
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                updateProgress(20, 'File loaded, validating ELF format...');
+                await sleep(100);
+                elfData = new Uint8Array(e.target.result);
+                try {
+                    updateProgress(30, 'Parsing ELF header...');
+                    await sleep(100);
+                    parsedElf = await parseELFAsync(elfData);
+                    updateProgress(90, 'Rendering interface...');
+                    await sleep(100);
+                    displayResults();
+                    updateProgress(100, 'Complete!');
+                    await sleep(200);
+                    hideLoading();
+                    document.getElementById('results').style.display = 'block';
+                    document.getElementById('searchBar').style.display = 'block';
+                } catch (err) {
+                    hideLoading();
+                    alert('Error: ' + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
 
-function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)) }
 
-function formatBytes(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(2)+' KB':(b/1048576).toFixed(2)+' MB'}
+        function formatBytes(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(2) + ' KB' : (b / 1048576).toFixed(2) + ' MB' }
 
-async function parseELFAsync(data){
-const view=new DataView(data.buffer);
-if(data[0]!==0x7f||data[1]!==0x45||data[2]!==0x4c||data[3]!==0x46)throw new Error('Not ELF');
-const is64=data[4]===2,isLE=data[5]===1;
-const g16=(o)=>view.getUint16(o,isLE),g32=(o)=>view.getUint32(o,isLE);
-const g64=(o)=>{const l=g32(o),h=g32(o+4);return h*4294967296+l};
+        async function parseELFAsync(data) {
+            const view = new DataView(data.buffer);
+            if (data[0] !== 0x7f || data[1] !== 0x45 || data[2] !== 0x4c || data[3] !== 0x46) throw new Error('Not ELF');
+            const is64 = data[4] === 2, isLE = data[5] === 1;
+            const g16 = (o) => view.getUint16(o, isLE), g32 = (o) => view.getUint32(o, isLE);
+            const g64 = (o) => { const l = g32(o), h = g32(o + 4); return h * 4294967296 + l };
 
-const hdr={is64,isLE,fields:[],machine:g16(18)};
-hdr.fields.push({name:'Magic',value:Array.from(data.slice(0,4)).map(b=>'0x'+b.toString(16).padStart(2,'0')).join(' '),offset:0,size:4});
-hdr.fields.push({name:'Class',value:is64?'ELF64':'ELF32',offset:4,size:1});
-hdr.fields.push({name:'Data',value:isLE?'Little Endian':'Big Endian',offset:5,size:1});
-hdr.fields.push({name:'Version',value:data[6],offset:6,size:1});
-hdr.fields.push({name:'OS/ABI',value:getOSABI(data[7]),offset:7,size:1});
-hdr.type=g16(16);
-hdr.fields.push({name:'Type',value:getElfType(hdr.type),offset:16,size:2});
-hdr.fields.push({name:'Machine',value:getMachine(hdr.machine),offset:18,size:2});
+            const hdr = { is64, isLE, fields: [], machine: g16(18) };
+            hdr.fields.push({ name: 'Magic', value: Array.from(data.slice(0, 4)).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '), offset: 0, size: 4 });
+            hdr.fields.push({ name: 'Class', value: is64 ? 'ELF64' : 'ELF32', offset: 4, size: 1 });
+            hdr.fields.push({ name: 'Data', value: isLE ? 'Little Endian' : 'Big Endian', offset: 5, size: 1 });
+            hdr.fields.push({ name: 'Version', value: data[6], offset: 6, size: 1 });
+            hdr.fields.push({ name: 'OS/ABI', value: getOSABI(data[7]), offset: 7, size: 1 });
+            hdr.type = g16(16);
+            hdr.fields.push({ name: 'Type', value: getElfType(hdr.type), offset: 16, size: 2 });
+            hdr.fields.push({ name: 'Machine', value: getMachine(hdr.machine), offset: 18, size: 2 });
 
-if(is64){
-hdr.entry=g64(24);hdr.phoff=g64(32);hdr.shoff=g64(40);
-hdr.phnum=g16(56);hdr.shnum=g16(60);hdr.shstrndx=g16(62);hdr.phentsize=g16(54);hdr.shentsize=g16(58);
-hdr.fields.push({name:'Entry Point',value:'0x'+hdr.entry.toString(16),offset:24,size:8});
-hdr.fields.push({name:'Program Header Offset',value:'0x'+hdr.phoff.toString(16),offset:32,size:8});
-hdr.fields.push({name:'Section Header Offset',value:'0x'+hdr.shoff.toString(16),offset:40,size:8});
-hdr.fields.push({name:'Flags',value:'0x'+g32(48).toString(16),offset:48,size:4});
-hdr.fields.push({name:'ELF Header Size',value:g16(52)+' bytes',offset:52,size:2});
-hdr.fields.push({name:'Program Header Size',value:hdr.phentsize+' bytes',offset:54,size:2});
-hdr.fields.push({name:'Program Header Count',value:hdr.phnum,offset:56,size:2});
-hdr.fields.push({name:'Section Header Size',value:hdr.shentsize+' bytes',offset:58,size:2});
-hdr.fields.push({name:'Section Header Count',value:hdr.shnum,offset:60,size:2});
-hdr.fields.push({name:'Section Name String Index',value:hdr.shstrndx,offset:62,size:2});
-}else{
-hdr.entry=g32(24);hdr.phoff=g32(28);hdr.shoff=g32(32);
-hdr.phnum=g16(44);hdr.shnum=g16(48);hdr.shstrndx=g16(50);hdr.phentsize=g16(42);hdr.shentsize=g16(46);
-hdr.fields.push({name:'Entry Point',value:'0x'+hdr.entry.toString(16),offset:24,size:4});
-hdr.fields.push({name:'Program Header Offset',value:'0x'+hdr.phoff.toString(16),offset:28,size:4});
-hdr.fields.push({name:'Section Header Offset',value:'0x'+hdr.shoff.toString(16),offset:32,size:4});
-hdr.fields.push({name:'Flags',value:'0x'+g32(36).toString(16),offset:36,size:4});
-hdr.fields.push({name:'ELF Header Size',value:g16(40)+' bytes',offset:40,size:2});
-hdr.fields.push({name:'Program Header Size',value:hdr.phentsize+' bytes',offset:42,size:2});
-hdr.fields.push({name:'Program Header Count',value:hdr.phnum,offset:44,size:2});
-hdr.fields.push({name:'Section Header Size',value:hdr.shentsize+' bytes',offset:46,size:2});
-hdr.fields.push({name:'Section Header Count',value:hdr.shnum,offset:48,size:2});
-hdr.fields.push({name:'Section Name String Index',value:hdr.shstrndx,offset:50,size:2});
-}
+            if (is64) {
+                hdr.entry = g64(24); hdr.phoff = g64(32); hdr.shoff = g64(40);
+                hdr.phnum = g16(56); hdr.shnum = g16(60); hdr.shstrndx = g16(62); hdr.phentsize = g16(54); hdr.shentsize = g16(58);
+                hdr.fields.push({ name: 'Entry Point', value: '0x' + hdr.entry.toString(16), offset: 24, size: 8 });
+                hdr.fields.push({ name: 'Program Header Offset', value: '0x' + hdr.phoff.toString(16), offset: 32, size: 8 });
+                hdr.fields.push({ name: 'Section Header Offset', value: '0x' + hdr.shoff.toString(16), offset: 40, size: 8 });
+                hdr.fields.push({ name: 'Flags', value: '0x' + g32(48).toString(16), offset: 48, size: 4 });
+                hdr.fields.push({ name: 'ELF Header Size', value: g16(52) + ' bytes', offset: 52, size: 2 });
+                hdr.fields.push({ name: 'Program Header Size', value: hdr.phentsize + ' bytes', offset: 54, size: 2 });
+                hdr.fields.push({ name: 'Program Header Count', value: hdr.phnum, offset: 56, size: 2 });
+                hdr.fields.push({ name: 'Section Header Size', value: hdr.shentsize + ' bytes', offset: 58, size: 2 });
+                hdr.fields.push({ name: 'Section Header Count', value: hdr.shnum, offset: 60, size: 2 });
+                hdr.fields.push({ name: 'Section Name String Index', value: hdr.shstrndx, offset: 62, size: 2 });
+            } else {
+                hdr.entry = g32(24); hdr.phoff = g32(28); hdr.shoff = g32(32);
+                hdr.phnum = g16(44); hdr.shnum = g16(48); hdr.shstrndx = g16(50); hdr.phentsize = g16(42); hdr.shentsize = g16(46);
+                hdr.fields.push({ name: 'Entry Point', value: '0x' + hdr.entry.toString(16), offset: 24, size: 4 });
+                hdr.fields.push({ name: 'Program Header Offset', value: '0x' + hdr.phoff.toString(16), offset: 28, size: 4 });
+                hdr.fields.push({ name: 'Section Header Offset', value: '0x' + hdr.shoff.toString(16), offset: 32, size: 4 });
+                hdr.fields.push({ name: 'Flags', value: '0x' + g32(36).toString(16), offset: 36, size: 4 });
+                hdr.fields.push({ name: 'ELF Header Size', value: g16(40) + ' bytes', offset: 40, size: 2 });
+                hdr.fields.push({ name: 'Program Header Size', value: hdr.phentsize + ' bytes', offset: 42, size: 2 });
+                hdr.fields.push({ name: 'Program Header Count', value: hdr.phnum, offset: 44, size: 2 });
+                hdr.fields.push({ name: 'Section Header Size', value: hdr.shentsize + ' bytes', offset: 46, size: 2 });
+                hdr.fields.push({ name: 'Section Header Count', value: hdr.shnum, offset: 48, size: 2 });
+                hdr.fields.push({ name: 'Section Name String Index', value: hdr.shstrndx, offset: 50, size: 2 });
+            }
 
-updateProgress(40,'Parsing section headers...');
-await sleep(50);
+            updateProgress(40, 'Parsing section headers...');
+            await sleep(50);
 
-const sho=hdr.shoff+hdr.shstrndx*hdr.shentsize;
-let strd;
-if(is64){const so=g64(sho+24),ss=g64(sho+32);strd=data.slice(so,so+ss)}
-else{const so=g32(sho+16),ss=g32(sho+20);strd=data.slice(so,so+ss)}
+            const sho = hdr.shoff + hdr.shstrndx * hdr.shentsize;
+            let strd;
+            if (is64) { const so = g64(sho + 24), ss = g64(sho + 32); strd = data.slice(so, so + ss) }
+            else { const so = g32(sho + 16), ss = g32(sho + 20); strd = data.slice(so, so + ss) }
 
-const phs=[];
-for(let i=0;i<hdr.phnum;i++){
-const o=hdr.phoff+i*hdr.phentsize,ph={fields:[],index:i};
-if(is64){
-ph.type=g32(o);ph.flags=g32(o+4);ph.offset=g64(o+8);ph.vaddr=g64(o+16);
-ph.paddr=g64(o+24);ph.filesz=g64(o+32);ph.memsz=g64(o+40);ph.align=g64(o+48);
-ph.fields.push({name:'Type',value:getSegmentType(ph.type),offset:o,size:4});
-ph.fields.push({name:'Flags',value:getSegmentFlags(ph.flags),offset:o+4,size:4});
-ph.fields.push({name:'File Offset',value:'0x'+ph.offset.toString(16),offset:o+8,size:8});
-ph.fields.push({name:'Virtual Address',value:'0x'+ph.vaddr.toString(16),offset:o+16,size:8});
-ph.fields.push({name:'Physical Address',value:'0x'+ph.paddr.toString(16),offset:o+24,size:8});
-ph.fields.push({name:'File Size',value:formatBytes(ph.filesz),offset:o+32,size:8});
-ph.fields.push({name:'Memory Size',value:formatBytes(ph.memsz),offset:o+40,size:8});
-ph.fields.push({name:'Alignment',value:'0x'+ph.align.toString(16),offset:o+48,size:8});
-}else{
-ph.type=g32(o);ph.offset=g32(o+4);ph.vaddr=g32(o+8);ph.paddr=g32(o+12);
-ph.filesz=g32(o+16);ph.memsz=g32(o+20);ph.flags=g32(o+24);ph.align=g32(o+28);
-ph.fields.push({name:'Type',value:getSegmentType(ph.type),offset:o,size:4});
-ph.fields.push({name:'File Offset',value:'0x'+ph.offset.toString(16),offset:o+4,size:4});
-ph.fields.push({name:'Virtual Address',value:'0x'+ph.vaddr.toString(16),offset:o+8,size:4});
-ph.fields.push({name:'Physical Address',value:'0x'+ph.paddr.toString(16),offset:o+12,size:4});
-ph.fields.push({name:'File Size',value:formatBytes(ph.filesz),offset:o+16,size:4});
-ph.fields.push({name:'Memory Size',value:formatBytes(ph.memsz),offset:o+20,size:4});
-ph.fields.push({name:'Flags',value:getSegmentFlags(ph.flags),offset:o+24,size:4});
-ph.fields.push({name:'Alignment',value:'0x'+ph.align.toString(16),offset:o+28,size:4});
-}
-if(ph.filesz>0&&ph.filesz<100000){
-ph.dataPreview=Array.from(data.slice(ph.offset,ph.offset+Math.min(ph.filesz,64)));
-}
-phs.push(ph);
-}
+            const phs = [];
+            for (let i = 0; i < hdr.phnum; i++) {
+                const o = hdr.phoff + i * hdr.phentsize, ph = { fields: [], index: i };
+                if (is64) {
+                    ph.type = g32(o); ph.flags = g32(o + 4); ph.offset = g64(o + 8); ph.vaddr = g64(o + 16);
+                    ph.paddr = g64(o + 24); ph.filesz = g64(o + 32); ph.memsz = g64(o + 40); ph.align = g64(o + 48);
+                    ph.fields.push({ name: 'Type', value: getSegmentType(ph.type), offset: o, size: 4 });
+                    ph.fields.push({ name: 'Flags', value: getSegmentFlags(ph.flags), offset: o + 4, size: 4 });
+                    ph.fields.push({ name: 'File Offset', value: '0x' + ph.offset.toString(16), offset: o + 8, size: 8 });
+                    ph.fields.push({ name: 'Virtual Address', value: '0x' + ph.vaddr.toString(16), offset: o + 16, size: 8 });
+                    ph.fields.push({ name: 'Physical Address', value: '0x' + ph.paddr.toString(16), offset: o + 24, size: 8 });
+                    ph.fields.push({ name: 'File Size', value: formatBytes(ph.filesz), offset: o + 32, size: 8 });
+                    ph.fields.push({ name: 'Memory Size', value: formatBytes(ph.memsz), offset: o + 40, size: 8 });
+                    ph.fields.push({ name: 'Alignment', value: '0x' + ph.align.toString(16), offset: o + 48, size: 8 });
+                } else {
+                    ph.type = g32(o); ph.offset = g32(o + 4); ph.vaddr = g32(o + 8); ph.paddr = g32(o + 12);
+                    ph.filesz = g32(o + 16); ph.memsz = g32(o + 20); ph.flags = g32(o + 24); ph.align = g32(o + 28);
+                    ph.fields.push({ name: 'Type', value: getSegmentType(ph.type), offset: o, size: 4 });
+                    ph.fields.push({ name: 'File Offset', value: '0x' + ph.offset.toString(16), offset: o + 4, size: 4 });
+                    ph.fields.push({ name: 'Virtual Address', value: '0x' + ph.vaddr.toString(16), offset: o + 8, size: 4 });
+                    ph.fields.push({ name: 'Physical Address', value: '0x' + ph.paddr.toString(16), offset: o + 12, size: 4 });
+                    ph.fields.push({ name: 'File Size', value: formatBytes(ph.filesz), offset: o + 16, size: 4 });
+                    ph.fields.push({ name: 'Memory Size', value: formatBytes(ph.memsz), offset: o + 20, size: 4 });
+                    ph.fields.push({ name: 'Flags', value: getSegmentFlags(ph.flags), offset: o + 24, size: 4 });
+                    ph.fields.push({ name: 'Alignment', value: '0x' + ph.align.toString(16), offset: o + 28, size: 4 });
+                }
+                if (ph.filesz > 0 && ph.filesz < 100000) {
+                    ph.dataPreview = Array.from(data.slice(ph.offset, ph.offset + Math.min(ph.filesz, 64)));
+                }
+                phs.push(ph);
+            }
 
-const secs=[];
-for(let i=0;i<hdr.shnum;i++){
-const o=hdr.shoff+i*hdr.shentsize,s={fields:[],index:i};
-if(is64){
-s.nameIdx=g32(o);s.type=g32(o+4);s.flags=g64(o+8);s.addr=g64(o+16);
-s.offset=g64(o+24);s.size=g64(o+32);s.link=g32(o+40);s.info=g32(o+44);
-s.addralign=g64(o+48);s.entsize=g64(o+56);
-s.name=readStr(strd,s.nameIdx);
-s.fields.push({name:'Name',value:s.name||'(empty)',offset:o,size:4});
-s.fields.push({name:'Type',value:getSectionType(s.type),offset:o+4,size:4});
-s.fields.push({name:'Flags',value:getSectionFlags(s.flags),offset:o+8,size:8});
-s.fields.push({name:'Address',value:'0x'+s.addr.toString(16),offset:o+16,size:8});
-s.fields.push({name:'File Offset',value:'0x'+s.offset.toString(16),offset:o+24,size:8});
-s.fields.push({name:'Size',value:formatBytes(s.size),offset:o+32,size:8});
-s.fields.push({name:'Link',value:s.link,offset:o+40,size:4});
-s.fields.push({name:'Info',value:s.info,offset:o+44,size:4});
-s.fields.push({name:'Alignment',value:s.addralign,offset:o+48,size:8});
-s.fields.push({name:'Entry Size',value:s.entsize,offset:o+56,size:8});
-}else{
-s.nameIdx=g32(o);s.type=g32(o+4);s.flags=g32(o+8);s.addr=g32(o+12);
-s.offset=g32(o+16);s.size=g32(o+20);s.link=g32(o+24);s.info=g32(o+28);
-s.addralign=g32(o+32);s.entsize=g32(o+36);
-s.name=readStr(strd,s.nameIdx);
-s.fields.push({name:'Name',value:s.name||'(empty)',offset:o,size:4});
-s.fields.push({name:'Type',value:getSectionType(s.type),offset:o+4,size:4});
-s.fields.push({name:'Flags',value:getSectionFlags(s.flags),offset:o+8,size:4});
-s.fields.push({name:'Address',value:'0x'+s.addr.toString(16),offset:o+12,size:4});
-s.fields.push({name:'File Offset',value:'0x'+s.offset.toString(16),offset:o+16,size:4});
-s.fields.push({name:'Size',value:formatBytes(s.size),offset:o+20,size:4});
-s.fields.push({name:'Link',value:s.link,offset:o+24,size:4});
-s.fields.push({name:'Info',value:s.info,offset:o+28,size:4});
-s.fields.push({name:'Alignment',value:s.addralign,offset:o+32,size:4});
-s.fields.push({name:'Entry Size',value:s.entsize,offset:o+36,size:4});
-}
-if(s.size>0&&s.size<100000&&s.type!==8){
-s.dataPreview=Array.from(data.slice(s.offset,s.offset+Math.min(s.size,64)));
-}
-secs.push(s);
-}
+            const secs = [];
+            for (let i = 0; i < hdr.shnum; i++) {
+                const o = hdr.shoff + i * hdr.shentsize, s = { fields: [], index: i };
+                if (is64) {
+                    s.nameIdx = g32(o); s.type = g32(o + 4); s.flags = g64(o + 8); s.addr = g64(o + 16);
+                    s.offset = g64(o + 24); s.size = g64(o + 32); s.link = g32(o + 40); s.info = g32(o + 44);
+                    s.addralign = g64(o + 48); s.entsize = g64(o + 56);
+                    s.name = readStr(strd, s.nameIdx);
+                    s.fields.push({ name: 'Name', value: s.name || '(empty)', offset: o, size: 4 });
+                    s.fields.push({ name: 'Type', value: getSectionType(s.type), offset: o + 4, size: 4 });
+                    s.fields.push({ name: 'Flags', value: getSectionFlags(s.flags), offset: o + 8, size: 8 });
+                    s.fields.push({ name: 'Address', value: '0x' + s.addr.toString(16), offset: o + 16, size: 8 });
+                    s.fields.push({ name: 'File Offset', value: '0x' + s.offset.toString(16), offset: o + 24, size: 8 });
+                    s.fields.push({ name: 'Size', value: formatBytes(s.size), offset: o + 32, size: 8 });
+                    s.fields.push({ name: 'Link', value: s.link, offset: o + 40, size: 4 });
+                    s.fields.push({ name: 'Info', value: s.info, offset: o + 44, size: 4 });
+                    s.fields.push({ name: 'Alignment', value: s.addralign, offset: o + 48, size: 8 });
+                    s.fields.push({ name: 'Entry Size', value: s.entsize, offset: o + 56, size: 8 });
+                } else {
+                    s.nameIdx = g32(o); s.type = g32(o + 4); s.flags = g32(o + 8); s.addr = g32(o + 12);
+                    s.offset = g32(o + 16); s.size = g32(o + 20); s.link = g32(o + 24); s.info = g32(o + 28);
+                    s.addralign = g32(o + 32); s.entsize = g32(o + 36);
+                    s.name = readStr(strd, s.nameIdx);
+                    s.fields.push({ name: 'Name', value: s.name || '(empty)', offset: o, size: 4 });
+                    s.fields.push({ name: 'Type', value: getSectionType(s.type), offset: o + 4, size: 4 });
+                    s.fields.push({ name: 'Flags', value: getSectionFlags(s.flags), offset: o + 8, size: 4 });
+                    s.fields.push({ name: 'Address', value: '0x' + s.addr.toString(16), offset: o + 12, size: 4 });
+                    s.fields.push({ name: 'File Offset', value: '0x' + s.offset.toString(16), offset: o + 16, size: 4 });
+                    s.fields.push({ name: 'Size', value: formatBytes(s.size), offset: o + 20, size: 4 });
+                    s.fields.push({ name: 'Link', value: s.link, offset: o + 24, size: 4 });
+                    s.fields.push({ name: 'Info', value: s.info, offset: o + 28, size: 4 });
+                    s.fields.push({ name: 'Alignment', value: s.addralign, offset: o + 32, size: 4 });
+                    s.fields.push({ name: 'Entry Size', value: s.entsize, offset: o + 36, size: 4 });
+                }
+                if (s.size > 0 && s.size < 100000 && s.type !== 8) {
+                    s.dataPreview = Array.from(data.slice(s.offset, s.offset + Math.min(s.size, 64)));
+                }
+                secs.push(s);
+            }
 
-updateProgress(55,'Parsing strings...');
-await sleep(50);
+            updateProgress(55, 'Parsing strings...');
+            await sleep(50);
 
-const strs=[];
-for(const s of secs){
-if(s.type===3){
-const sd=data.slice(s.offset,s.offset+s.size);
-let cs='',so=0;
-for(let i=0;i<sd.length;i++){
-if(sd[i]===0){
-if(cs.length>0)strs.push({value:cs,offset:s.offset+so,size:cs.length+1,section:s.name});
-cs='';so=i+1;
-}else if(sd[i]>=32&&sd[i]<127)cs+=String.fromCharCode(sd[i]);
-}
-}
-}
+            const strs = [];
+            for (const s of secs) {
+                if (s.type === 3) {
+                    const sd = data.slice(s.offset, s.offset + s.size);
+                    let cs = '', so = 0;
+                    for (let i = 0; i < sd.length; i++) {
+                        if (sd[i] === 0) {
+                            if (cs.length > 0) strs.push({ value: cs, offset: s.offset + so, size: cs.length + 1, section: s.name });
+                            cs = ''; so = i + 1;
+                        } else if (sd[i] >= 32 && sd[i] < 127) cs += String.fromCharCode(sd[i]);
+                    }
+                }
+            }
 
-updateProgress(70,'Parsing symbols...');
-await sleep(50);
+            updateProgress(70, 'Parsing symbols...');
+            await sleep(50);
 
-const syms=[];
-const symSections=[];
-for(const sec of secs){
-if(sec.type===2||sec.type===11){
-symSections.push(sec.name);
-const strtabSec=secs[sec.link];
-if(!strtabSec)continue;
-const strtabData=data.slice(strtabSec.offset,strtabSec.offset+strtabSec.size);
-const entrySize=sec.entsize||(is64?24:16);
-const numEntries=Math.floor(sec.size/entrySize);
-for(let i=0;i<numEntries&&i<2000;i++){
-const o=sec.offset+i*entrySize;
-const sym={};
-if(is64){
-sym.nameIdx=g32(o);sym.info=data[o+4];sym.other=data[o+5];
-sym.shndx=g16(o+6);sym.value=g64(o+8);sym.size=g64(o+16);
-}else{
-sym.nameIdx=g32(o);sym.value=g32(o+4);sym.size=g32(o+8);
-sym.info=data[o+12];sym.other=data[o+13];sym.shndx=g16(o+14);
-}
-sym.name=readStr(strtabData,sym.nameIdx)||'(unnamed #'+i+')';
-sym.bind=sym.info>>4;sym.type=sym.info&0xf;
-sym.offset=o;sym.section=sec.name;sym.index=i;
-syms.push(sym);
-}
-}
-}
+            const syms = [];
+            const symSections = [];
+            for (const sec of secs) {
+                if (sec.type === 2 || sec.type === 11) {
+                    symSections.push(sec.name);
+                    const strtabSec = secs[sec.link];
+                    if (!strtabSec) continue;
+                    const strtabData = data.slice(strtabSec.offset, strtabSec.offset + strtabSec.size);
+                    const entrySize = sec.entsize || (is64 ? 24 : 16);
+                    const numEntries = Math.floor(sec.size / entrySize);
+                    for (let i = 0; i < numEntries && i < 2000; i++) {
+                        const o = sec.offset + i * entrySize;
+                        const sym = {};
+                        if (is64) {
+                            sym.nameIdx = g32(o); sym.info = data[o + 4]; sym.other = data[o + 5];
+                            sym.shndx = g16(o + 6); sym.value = g64(o + 8); sym.size = g64(o + 16);
+                        } else {
+                            sym.nameIdx = g32(o); sym.value = g32(o + 4); sym.size = g32(o + 8);
+                            sym.info = data[o + 12]; sym.other = data[o + 13]; sym.shndx = g16(o + 14);
+                        }
+                        sym.name = readStr(strtabData, sym.nameIdx) || '(unnamed #' + i + ')';
+                        sym.bind = sym.info >> 4; sym.type = sym.info & 0xf;
+                        sym.offset = o; sym.section = sec.name; sym.index = i;
+                        syms.push(sym);
+                    }
+                }
+            }
 
-updateProgress(85,'Finalizing...');
-await sleep(50);
+            updateProgress(85, 'Finalizing...');
+            await sleep(50);
 
-return{is64,isLE,header:hdr,programHeaders:phs,sectionHeaders:secs,strings:strs,symbols:syms,symbolSections:symSections};
-}
+            return { is64, isLE, header: hdr, programHeaders: phs, sectionHeaders: secs, strings: strs, symbols: syms, symbolSections: symSections };
+        }
 
-function readStr(d,o){let s='';for(let i=o;i<d.length&&d[i]!==0;i++)s+=String.fromCharCode(d[i]);return s}
-function getOSABI(v){const t={0:'System V',1:'HP-UX',2:'NetBSD',3:'Linux',6:'Solaris',7:'AIX',8:'IRIX',9:'FreeBSD'};return t[v]||'Unknown'}
-function getElfType(v){const t={0:'NONE',1:'REL (Relocatable)',2:'EXEC (Executable)',3:'DYN (Shared object)',4:'CORE (Core file)'};return t[v]||'Unknown'}
-function getMachine(v){const m={0:'None',2:'SPARC',3:'x86',8:'MIPS',20:'PowerPC',40:'ARM',42:'SuperH',50:'IA-64',62:'x86-64',183:'AArch64',243:'RISC-V'};return m[v]||'Unknown'}
-function getSegmentType(v){const t={0:'NULL',1:'LOAD',2:'DYNAMIC',3:'INTERP',4:'NOTE',5:'SHLIB',6:'PHDR',7:'TLS',0x6474e550:'GNU_EH_FRAME',0x6474e551:'GNU_STACK',0x6474e552:'GNU_RELRO'};return t[v]||'0x'+v.toString(16)}
-function getSegmentFlags(v){let f=[];if(v&4)f.push('R');if(v&2)f.push('W');if(v&1)f.push('X');return f.join('')||'NONE'}
-function getSectionType(v){const t={0:'NULL',1:'PROGBITS',2:'SYMTAB',3:'STRTAB',4:'RELA',5:'HASH',6:'DYNAMIC',7:'NOTE',8:'NOBITS',9:'REL',11:'DYNSYM',14:'INIT_ARRAY',15:'FINI_ARRAY'};return t[v]||'Unknown ('+v+')'}
-function getSectionFlags(v){let f=[];if(v&1)f.push('W');if(v&2)f.push('A');if(v&4)f.push('X');if(v&0x10)f.push('M');if(v&0x20)f.push('S');return f.join('|')||'NONE'}
+        function readStr(d, o) { let s = ''; for (let i = o; i < d.length && d[i] !== 0; i++)s += String.fromCharCode(d[i]); return s }
+        function getOSABI(v) { const t = { 0: 'System V', 1: 'HP-UX', 2: 'NetBSD', 3: 'Linux', 6: 'Solaris', 7: 'AIX', 8: 'IRIX', 9: 'FreeBSD' }; return t[v] || 'Unknown' }
+        function getElfType(v) { const t = { 0: 'NONE', 1: 'REL (Relocatable)', 2: 'EXEC (Executable)', 3: 'DYN (Shared object)', 4: 'CORE (Core file)' }; return t[v] || 'Unknown' }
+        function getMachine(v) { const m = { 0: 'None', 2: 'SPARC', 3: 'x86', 8: 'MIPS', 20: 'PowerPC', 40: 'ARM', 42: 'SuperH', 50: 'IA-64', 62: 'x86-64', 183: 'AArch64', 243: 'RISC-V' }; return m[v] || 'Unknown' }
+        function getSegmentType(v) { const t = { 0: 'NULL', 1: 'LOAD', 2: 'DYNAMIC', 3: 'INTERP', 4: 'NOTE', 5: 'SHLIB', 6: 'PHDR', 7: 'TLS', 0x6474e550: 'GNU_EH_FRAME', 0x6474e551: 'GNU_STACK', 0x6474e552: 'GNU_RELRO' }; return t[v] || '0x' + v.toString(16) }
+        function getSegmentFlags(v) { let f = []; if (v & 4) f.push('R'); if (v & 2) f.push('W'); if (v & 1) f.push('X'); return f.join('') || 'NONE' }
+        function getSectionType(v) { const t = { 0: 'NULL', 1: 'PROGBITS', 2: 'SYMTAB', 3: 'STRTAB', 4: 'RELA', 5: 'HASH', 6: 'DYNAMIC', 7: 'NOTE', 8: 'NOBITS', 9: 'REL', 11: 'DYNSYM', 14: 'INIT_ARRAY', 15: 'FINI_ARRAY' }; return t[v] || 'Unknown (' + v + ')' }
+        function getSectionFlags(v) { let f = []; if (v & 1) f.push('W'); if (v & 2) f.push('A'); if (v & 4) f.push('X'); if (v & 0x10) f.push('M'); if (v & 0x20) f.push('S'); return f.join('|') || 'NONE' }
 
-function displayResults(){
-document.getElementById('fileArch').textContent=getMachine(parsedElf.header.machine)+' ('+(parsedElf.is64?'64-bit':'32-bit')+')';
-displayElfHeader();displayProgramHeaders();displaySectionHeaders();displaySymbols();displayStrings();displayStatistics();displayHexDump();
-}
+        function displayResults() {
+            document.getElementById('fileArch').textContent = getMachine(parsedElf.header.machine) + ' (' + (parsedElf.is64 ? '64-bit' : '32-bit') + ')';
+            displayElfHeader(); displayProgramHeaders(); displaySectionHeaders(); displaySymbols(); displayStrings(); displayStatistics(); displayHexDump();
+        }
 
-function displayElfHeader(){
-const c=document.getElementById('elf-header');c.innerHTML='';
-const s=document.createElement('div');s.className='section';
-s.innerHTML='<h3>ELF Header <span class="badge success">'+(parsedElf.is64?'ELF64':'ELF32')+'</span></h3>';
-parsedElf.header.fields.forEach(f=>s.appendChild(createFieldElement(f)));
-c.appendChild(s);
-}
+        function displayElfHeader() {
+            const c = document.getElementById('elf-header'); c.innerHTML = '';
+            const s = document.createElement('div'); s.className = 'section';
+            s.innerHTML = '<h3>ELF Header <span class="badge success">' + (parsedElf.is64 ? 'ELF64' : 'ELF32') + '</span></h3>';
+            parsedElf.header.fields.forEach(f => s.appendChild(createFieldElement(f)));
+            c.appendChild(s);
+        }
 
-function displayProgramHeaders(){
-const c=document.getElementById('program-headers');c.innerHTML='';
-parsedElf.programHeaders.forEach((ph,i)=>{
-const s=document.createElement('div');s.className='section';
-let bc=ph.type===1?'success':'warning';
-s.innerHTML='<h3>Program Header #'+i+' <span class="badge '+bc+'">'+getSegmentType(ph.type)+'</span></h3>';
-ph.fields.forEach(f=>s.appendChild(createFieldElement(f)));
-if(ph.dataPreview){
-const p=document.createElement('div');p.className='data-preview';
-p.innerHTML='<strong>Data Preview:</strong><br>'+ph.dataPreview.map(b=>b.toString(16).padStart(2,'0')).join(' ');
-s.appendChild(p);
-}
-c.appendChild(s);
-});
-}
+        function displayProgramHeaders() {
+            const c = document.getElementById('program-headers'); c.innerHTML = '';
+            parsedElf.programHeaders.forEach((ph, i) => {
+                const s = document.createElement('div'); s.className = 'section';
+                let bc = ph.type === 1 ? 'success' : 'warning';
+                s.innerHTML = '<h3>Program Header #' + i + ' <span class="badge ' + bc + '">' + getSegmentType(ph.type) + '</span></h3>';
+                ph.fields.forEach(f => s.appendChild(createFieldElement(f)));
+                if (ph.dataPreview) {
+                    const p = document.createElement('div'); p.className = 'data-preview';
+                    p.innerHTML = '<strong>Data Preview:</strong><br>' + ph.dataPreview.map(b => b.toString(16).padStart(2, '0')).join(' ');
+                    s.appendChild(p);
+                }
+                c.appendChild(s);
+            });
+        }
 
-function displaySectionHeaders(){
-const c=document.getElementById('section-headers');c.innerHTML='';
-parsedElf.sectionHeaders.forEach((sh,i)=>{
-const s=document.createElement('div');s.className='section';
-let bc='info';
-if(sh.name.includes('.text'))bc='success';
-else if(sh.name.includes('.data'))bc='warning';
-s.innerHTML='<h3>Section #'+i+' <span class="badge '+bc+'">'+(sh.name||'unnamed')+'</span></h3>';
-sh.fields.forEach(f=>s.appendChild(createFieldElement(f)));
-if(sh.dataPreview){
-const p=document.createElement('div');p.className='data-preview';
-p.innerHTML='<strong>Data Preview:</strong><br>'+sh.dataPreview.map(b=>b.toString(16).padStart(2,'0')).join(' ');
-s.appendChild(p);
-}
-c.appendChild(s);
-});
-}
+        function displaySectionHeaders() {
+            const c = document.getElementById('section-headers'); c.innerHTML = '';
+            parsedElf.sectionHeaders.forEach((sh, i) => {
+                const s = document.createElement('div'); s.className = 'section';
+                let bc = 'info';
+                if (sh.name.includes('.text')) bc = 'success';
+                else if (sh.name.includes('.data')) bc = 'warning';
+                s.innerHTML = '<h3>Section #' + i + ' <span class="badge ' + bc + '">' + (sh.name || 'unnamed') + '</span></h3>';
+                sh.fields.forEach(f => s.appendChild(createFieldElement(f)));
+                if (sh.dataPreview) {
+                    const p = document.createElement('div'); p.className = 'data-preview';
+                    p.innerHTML = '<strong>Data Preview:</strong><br>' + sh.dataPreview.map(b => b.toString(16).padStart(2, '0')).join(' ');
+                    s.appendChild(p);
+                }
+                c.appendChild(s);
+            });
+        }
 
-function displaySymbols(){
-const c=document.getElementById('symbols');c.innerHTML='';
-if(parsedElf.symbolSections.length===0){
-c.innerHTML='<div class="warning-box">⚠️ No symbol sections found (.symtab or .dynsym)<br>This binary may be <strong>stripped</strong>. Use "readelf -S" to verify sections.</div>';
-return;
-}
-if(parsedElf.symbols.length===0){
-c.innerHTML='<div class="warning-box">⚠️ Symbol sections found ('+parsedElf.symbolSections.join(', ')+') but no symbols parsed.<br>This may indicate a parsing issue.</div>';
-return;
-}
-const s=document.createElement('div');s.className='section';
-s.innerHTML='<h3>Symbol Table <span class="badge success">'+parsedElf.symbols.length+' symbols</span> <span class="badge info">'+parsedElf.symbolSections.join(', ')+'</span></h3>';
-const t=document.createElement('table');
-t.innerHTML='<thead><tr><th>#</th><th>Name</th><th>Type</th><th>Bind</th><th>Value</th><th>Size</th><th>Shndx</th></tr></thead><tbody></tbody>';
-const tb=t.querySelector('tbody');
-parsedElf.symbols.slice(0,1000).forEach(sym=>{
-const r=document.createElement('tr');
-r.onclick=()=>highlightBytes(sym.offset,parsedElf.is64?24:16);
-r.innerHTML='<td style="color:#8b949e">'+sym.index+'</td>'+
-'<td style="color:#79c0ff">'+escapeHtml(sym.name)+'</td>'+
-'<td>'+getSymbolType(sym.type)+'</td>'+
-'<td>'+getSymbolBind(sym.bind)+'</td>'+
-'<td>0x'+sym.value.toString(16)+'</td>'+
-'<td>'+sym.size+'</td>'+
-'<td>'+sym.shndx+'</td>';
-tb.appendChild(r);
-});
-s.appendChild(t);
-if(parsedElf.symbols.length>1000){
-const n=document.createElement('p');n.style='color:#8b949e;padding:10px';
-n.textContent='Showing first 1000 of '+parsedElf.symbols.length+' symbols';
-s.appendChild(n);
-}
-c.appendChild(s);
-}
+        function displaySymbols() {
+            const c = document.getElementById('symbols'); c.innerHTML = '';
+            if (parsedElf.symbolSections.length === 0) {
+                c.innerHTML = '<div class="warning-box">⚠️ No symbol sections found (.symtab or .dynsym)<br>This binary may be <strong>stripped</strong>. Use "readelf -S" to verify sections.</div>';
+                return;
+            }
+            if (parsedElf.symbols.length === 0) {
+                c.innerHTML = '<div class="warning-box">⚠️ Symbol sections found (' + parsedElf.symbolSections.join(', ') + ') but no symbols parsed.<br>This may indicate a parsing issue.</div>';
+                return;
+            }
+            const s = document.createElement('div'); s.className = 'section';
+            s.innerHTML = '<h3>Symbol Table <span class="badge success">' + parsedElf.symbols.length + ' symbols</span> <span class="badge info">' + parsedElf.symbolSections.join(', ') + '</span></h3>';
+            const t = document.createElement('table');
+            t.innerHTML = '<thead><tr><th>#</th><th>Name</th><th>Type</th><th>Bind</th><th>Value</th><th>Size</th><th>Shndx</th></tr></thead><tbody></tbody>';
+            const tb = t.querySelector('tbody');
+            parsedElf.symbols.slice(0, 1000).forEach(sym => {
+                const r = document.createElement('tr');
+                r.onclick = () => highlightBytes(sym.offset, parsedElf.is64 ? 24 : 16);
+                r.innerHTML = '<td style="color:#8b949e">' + sym.index + '</td>' +
+                    '<td style="color:#79c0ff">' + escapeHtml(sym.name) + '</td>' +
+                    '<td>' + getSymbolType(sym.type) + '</td>' +
+                    '<td>' + getSymbolBind(sym.bind) + '</td>' +
+                    '<td>0x' + sym.value.toString(16) + '</td>' +
+                    '<td>' + sym.size + '</td>' +
+                    '<td>' + sym.shndx + '</td>';
+                tb.appendChild(r);
+            });
+            s.appendChild(t);
+            if (parsedElf.symbols.length > 1000) {
+                const n = document.createElement('p'); n.style = 'color:#8b949e;padding:10px';
+                n.textContent = 'Showing first 1000 of ' + parsedElf.symbols.length + ' symbols';
+                s.appendChild(n);
+            }
+            c.appendChild(s);
+        }
 
-function getSymbolType(v){const t={0:'NOTYPE',1:'OBJECT',2:'FUNC',3:'SECTION',4:'FILE',5:'COMMON',6:'TLS',10:'LOOS',12:'HIOS'};return t[v]||'?'}
-function getSymbolBind(v){const b={0:'LOCAL',1:'GLOBAL',2:'WEAK',10:'LOOS',12:'HIOS'};return b[v]||'?'}
+        function getSymbolType(v) { const t = { 0: 'NOTYPE', 1: 'OBJECT', 2: 'FUNC', 3: 'SECTION', 4: 'FILE', 5: 'COMMON', 6: 'TLS', 10: 'LOOS', 12: 'HIOS' }; return t[v] || '?' }
+        function getSymbolBind(v) { const b = { 0: 'LOCAL', 1: 'GLOBAL', 2: 'WEAK', 10: 'LOOS', 12: 'HIOS' }; return b[v] || '?' }
 
-function displayStrings(){
-const c=document.getElementById('strings');c.innerHTML='';
-if(parsedElf.strings.length===0){
-c.innerHTML='<div class="warning-box">⚠️ No string sections found<br>The binary may not contain standard string tables.</div>';
-return;
-}
-const s=document.createElement('div');s.className='section';
-s.innerHTML='<h3>String Tables <span class="badge success">'+parsedElf.strings.length+' strings</span></h3>';
-const t=document.createElement('table');
-t.innerHTML='<thead><tr><th>String</th><th>Section</th><th>Offset</th><th>Length</th></tr></thead><tbody></tbody>';
-const tb=t.querySelector('tbody');
-parsedElf.strings.slice(0,1000).forEach(str=>{
-const r=document.createElement('tr');
-r.onclick=()=>highlightBytes(str.offset,str.size);
-const displayStr=str.value.length>50?str.value.substring(0,50)+'...':str.value;
-r.innerHTML='<td style="color:#7ee787">'+escapeHtml(displayStr)+'</td>'+
-'<td style="color:#8b949e">'+str.section+'</td>'+
-'<td>0x'+str.offset.toString(16)+'</td>'+
-'<td>'+str.value.length+'</td>';
-tb.appendChild(r);
-});
-s.appendChild(t);
-if(parsedElf.strings.length>1000){
-const n=document.createElement('p');n.style='color:#8b949e;padding:10px';
-n.textContent='Showing first 1000 of '+parsedElf.strings.length+' strings';
-s.appendChild(n);
-}
-c.appendChild(s);
-}
+        function displayStrings() {
+            const c = document.getElementById('strings'); c.innerHTML = '';
+            if (parsedElf.strings.length === 0) {
+                c.innerHTML = '<div class="warning-box">⚠️ No string sections found<br>The binary may not contain standard string tables.</div>';
+                return;
+            }
+            const s = document.createElement('div'); s.className = 'section';
+            s.innerHTML = '<h3>String Tables <span class="badge success">' + parsedElf.strings.length + ' strings</span></h3>';
+            const t = document.createElement('table');
+            t.innerHTML = '<thead><tr><th>String</th><th>Section</th><th>Offset</th><th>Length</th></tr></thead><tbody></tbody>';
+            const tb = t.querySelector('tbody');
+            parsedElf.strings.slice(0, 1000).forEach(str => {
+                const r = document.createElement('tr');
+                r.onclick = () => highlightBytes(str.offset, str.size);
+                const displayStr = str.value.length > 50 ? str.value.substring(0, 50) + '...' : str.value;
+                r.innerHTML = '<td style="color:#7ee787">' + escapeHtml(displayStr) + '</td>' +
+                    '<td style="color:#8b949e">' + str.section + '</td>' +
+                    '<td>0x' + str.offset.toString(16) + '</td>' +
+                    '<td>' + str.value.length + '</td>';
+                tb.appendChild(r);
+            });
+            s.appendChild(t);
+            if (parsedElf.strings.length > 1000) {
+                const n = document.createElement('p'); n.style = 'color:#8b949e;padding:10px';
+                n.textContent = 'Showing first 1000 of ' + parsedElf.strings.length + ' strings';
+                s.appendChild(n);
+            }
+            c.appendChild(s);
+        }
 
-function displayStatistics(){
-const c=document.getElementById('statistics');c.innerHTML='';
-const s=document.createElement('div');s.className='section';
-s.innerHTML='<h3>File Statistics</h3>';
-const g=document.createElement('div');g.className='stat-grid';
-const stats=[
-{label:'Total File Size',value:formatBytes(elfData.length)},
-{label:'Section Count',value:parsedElf.sectionHeaders.length},
-{label:'Program Header Count',value:parsedElf.programHeaders.length},
-{label:'Symbol Count',value:parsedElf.symbols.length},
-{label:'String Count',value:parsedElf.strings.length},
-{label:'Loadable Segments',value:parsedElf.programHeaders.filter(ph=>ph.type===1).length},
-{label:'Symbol Sections',value:parsedElf.symbolSections.length>0?parsedElf.symbolSections.join(', '):'None (stripped)'}
-];
-stats.forEach(st=>{
-const cd=document.createElement('div');cd.className='stat-card';
-cd.innerHTML='<h4>'+st.label+'</h4><div class="stat-value">'+st.value+'</div>';
-g.appendChild(cd);
-});
-s.appendChild(g);c.appendChild(s);
-}
+        function displayStatistics() {
+            const c = document.getElementById('statistics'); c.innerHTML = '';
+            const s = document.createElement('div'); s.className = 'section';
+            s.innerHTML = '<h3>File Statistics</h3>';
+            const g = document.createElement('div'); g.className = 'stat-grid';
+            const stats = [
+                { label: 'Total File Size', value: formatBytes(elfData.length) },
+                { label: 'Section Count', value: parsedElf.sectionHeaders.length },
+                { label: 'Program Header Count', value: parsedElf.programHeaders.length },
+                { label: 'Symbol Count', value: parsedElf.symbols.length },
+                { label: 'String Count', value: parsedElf.strings.length },
+                { label: 'Loadable Segments', value: parsedElf.programHeaders.filter(ph => ph.type === 1).length },
+                { label: 'Symbol Sections', value: parsedElf.symbolSections.length > 0 ? parsedElf.symbolSections.join(', ') : 'None (stripped)' }
+            ];
+            stats.forEach(st => {
+                const cd = document.createElement('div'); cd.className = 'stat-card';
+                cd.innerHTML = '<h4>' + st.label + '</h4><div class="stat-value">' + st.value + '</div>';
+                g.appendChild(cd);
+            });
+            s.appendChild(g); c.appendChild(s);
+        }
 
-function displayHexDump(){
-const c=document.getElementById('hexViewer');c.innerHTML='';
-const bpl=16,lines=Math.ceil(elfData.length/bpl);
-for(let i=0;i<lines;i++){
-const o=i*bpl,ld=document.createElement('div');ld.className='hex-line';
-const os=document.createElement('span');os.className='hex-offset';
-os.textContent='0x'+o.toString(16).padStart(8,'0');ld.appendChild(os);
-const bd=document.createElement('div');bd.className='hex-bytes';
-for(let j=0;j<bpl;j++){
-const bo=o+j;
-if(bo<elfData.length){
-if(j%8===0&&j>0){const sp=document.createElement('span');sp.textContent=' ';bd.appendChild(sp)}
-const bs=document.createElement('span');bs.className='hex-byte';
-bs.textContent=elfData[bo].toString(16).padStart(2,'0');
-bs.dataset.offset=bo;
-bs.onclick=e=>{e.stopPropagation();highlightBytes(bo,1)};
-bd.appendChild(bs);
-}
-}
-ld.appendChild(bd);
-const ad=document.createElement('div');ad.className='hex-ascii';
-for(let j=0;j<bpl;j++){
-const bo=o+j;
-if(bo<elfData.length){
-const b=elfData[bo],ch=(b>=32&&b<127)?String.fromCharCode(b):'.';
-const cs=document.createElement('span');cs.className='ascii-char';
-cs.textContent=ch;cs.dataset.offset=bo;
-cs.onclick=e=>{e.stopPropagation();highlightBytes(bo,1)};
-ad.appendChild(cs);
-}
-}
-ld.appendChild(ad);c.appendChild(ld);
-}
-}
+        function displayHexDump() {
+            const c = document.getElementById('hexViewer'); c.innerHTML = '';
+            const bpl = 16, lines = Math.ceil(elfData.length / bpl);
+            for (let i = 0; i < lines; i++) {
+                const o = i * bpl, ld = document.createElement('div'); ld.className = 'hex-line';
+                const os = document.createElement('span'); os.className = 'hex-offset';
+                os.textContent = '0x' + o.toString(16).padStart(8, '0'); ld.appendChild(os);
+                const bd = document.createElement('div'); bd.className = 'hex-bytes';
+                for (let j = 0; j < bpl; j++) {
+                    const bo = o + j;
+                    if (bo < elfData.length) {
+                        if (j % 8 === 0 && j > 0) { const sp = document.createElement('span'); sp.textContent = ' '; bd.appendChild(sp) }
+                        const bs = document.createElement('span'); bs.className = 'hex-byte';
+                        bs.textContent = elfData[bo].toString(16).padStart(2, '0');
+                        bs.dataset.offset = bo;
+                        bs.onclick = e => { e.stopPropagation(); highlightBytes(bo, 1) };
+                        bd.appendChild(bs);
+                    }
+                }
+                ld.appendChild(bd);
+                const ad = document.createElement('div'); ad.className = 'hex-ascii';
+                for (let j = 0; j < bpl; j++) {
+                    const bo = o + j;
+                    if (bo < elfData.length) {
+                        const b = elfData[bo], ch = (b >= 32 && b < 127) ? String.fromCharCode(b) : '.';
+                        const cs = document.createElement('span'); cs.className = 'ascii-char';
+                        cs.textContent = ch; cs.dataset.offset = bo;
+                        cs.onclick = e => { e.stopPropagation(); highlightBytes(bo, 1) };
+                        ad.appendChild(cs);
+                    }
+                }
+                ld.appendChild(ad); c.appendChild(ld);
+            }
+        }
 
-function createFieldElement(f){
-const fd=document.createElement('div');fd.className='field';
-fd.innerHTML='<div class="field-name">'+f.name+'</div>'+
-'<div class="field-value">'+f.value+'</div>'+
-'<div class="field-offset">@0x'+f.offset.toString(16)+' ('+f.size+'B)</div>';
-fd.onclick=()=>highlightBytes(f.offset,f.size);
-return fd;
-}
+        function createFieldElement(f) {
+            const fd = document.createElement('div'); fd.className = 'field';
+            fd.innerHTML = '<div class="field-name">' + f.name + '</div>' +
+                '<div class="field-value">' + f.value + '</div>' +
+                '<div class="field-offset">@0x' + f.offset.toString(16) + ' (' + f.size + 'B)</div>';
+            fd.onclick = () => highlightBytes(f.offset, f.size);
+            return fd;
+        }
 
-function highlightBytes(o,s){
-document.querySelectorAll('.hex-byte.selected,.ascii-char.selected,.field.highlighted').forEach(e=>e.classList.remove('selected','highlighted'));
-for(let i=0;i<s;i++){
-const bo=o+i;
-const hb=document.querySelector('.hex-byte[data-offset="'+bo+'"]');
-const ac=document.querySelector('.ascii-char[data-offset="'+bo+'"]');
-if(hb)hb.classList.add('selected');
-if(ac)ac.classList.add('selected');
-}
-const hv=document.getElementById('hexViewer');
-const fb=document.querySelector('.hex-byte[data-offset="'+o+'"]');
-if(fb){const l=fb.closest('.hex-line');if(l)l.scrollIntoView({behavior:'smooth',block:'center'})}
-document.getElementById('selectedOffset').textContent='0x'+o.toString(16)+' - 0x'+(o+s-1).toString(16)+' ('+s+' bytes)';
-}
+        function highlightBytes(o, s) {
+            document.querySelectorAll('.hex-byte.selected,.ascii-char.selected,.field.highlighted').forEach(e => e.classList.remove('selected', 'highlighted'));
+            for (let i = 0; i < s; i++) {
+                const bo = o + i;
+                const hb = document.querySelector('.hex-byte[data-offset="' + bo + '"]');
+                const ac = document.querySelector('.ascii-char[data-offset="' + bo + '"]');
+                if (hb) hb.classList.add('selected');
+                if (ac) ac.classList.add('selected');
+            }
+            const hv = document.getElementById('hexViewer');
+            const fb = document.querySelector('.hex-byte[data-offset="' + o + '"]');
+            if (fb) { const l = fb.closest('.hex-line'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'center' }) }
+            document.getElementById('selectedOffset').textContent = '0x' + o.toString(16) + ' - 0x' + (o + s - 1).toString(16) + ' (' + s + ' bytes)';
+        }
 
-function switchTab(n){
-document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-event.target.classList.add('active');
-document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-document.getElementById(n).classList.add('active');
-}
+        function switchTab(n) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(n).classList.add('active');
+        }
 
-function setSearchMode(m){
-searchMode=m;
-document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
-event.target.classList.add('active');
-const p={hex:'Search hex bytes (e.g., 7F 45 4C 46 or 7F454C46)',string:'Search for text string',offset:'Jump to offset (e.g., 0x1000 or 4096)'};
-document.getElementById('searchInput').placeholder=p[m];
-}
+        function setSearchMode(m) {
+            searchMode = m;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            const p = { hex: 'Search hex bytes (e.g., 7F 45 4C 46 or 7F454C46)', string: 'Search for text string', offset: 'Jump to offset (e.g., 0x1000 or 4096)' };
+            document.getElementById('searchInput').placeholder = p[m];
+        }
 
-function performSearch(){
-const q=document.getElementById('searchInput').value.trim();
-if(!q)return;
-clearSearchHighlights();searchMatches=[];
-if(searchMode==='offset'){
-const o=q.startsWith('0x')?parseInt(q,16):parseInt(q,10);
-if(!isNaN(o)&&o>=0&&o<elfData.length){
-highlightBytes(o,1);
-document.getElementById('searchResults').textContent='Jumped to offset 0x'+o.toString(16);
-}else{document.getElementById('searchResults').textContent='Invalid offset'}
-return;
-}
-if(searchMode==='hex'){
-const hb=q.replace(/[^0-9a-fA-F]/g,'');
-if(hb.length%2!==0){document.getElementById('searchResults').textContent='Invalid hex (must be even length)';return}
-const pattern=[];
-for(let i=0;i<hb.length;i+=2)pattern.push(parseInt(hb.substr(i,2),16));
-for(let i=0;i<=elfData.length-pattern.length;i++){
-let match=true;
-for(let j=0;j<pattern.length;j++){if(elfData[i+j]!==pattern[j]){match=false;break}}
-if(match)searchMatches.push({offset:i,size:pattern.length});
-}
-}else if(searchMode==='string'){
-const bytes=[];
-for(let i=0;i<q.length;i++)bytes.push(q.charCodeAt(i));
-for(let i=0;i<=elfData.length-bytes.length;i++){
-let match=true;
-for(let j=0;j<bytes.length;j++){if(elfData[i+j]!==bytes[j]){match=false;break}}
-if(match)searchMatches.push({offset:i,size:bytes.length});
-}
-}
-if(searchMatches.length>0){
-currentMatchIndex=0;highlightSearchMatches();navigateToMatch(0);
-document.getElementById('searchResults').textContent='Found '+searchMatches.length+' match'+(searchMatches.length>1?'es':'')+' (highlighting max 100)';
-document.getElementById('prevBtn').disabled=false;
-document.getElementById('nextBtn').disabled=false;
-}else{
-document.getElementById('searchResults').textContent='No matches found';
-document.getElementById('prevBtn').disabled=true;
-document.getElementById('nextBtn').disabled=true;
-}
-}
+        function performSearch() {
+            const q = document.getElementById('searchInput').value.trim();
+            if (!q) return;
+            clearSearchHighlights(); searchMatches = [];
+            if (searchMode === 'offset') {
+                const o = q.startsWith('0x') ? parseInt(q, 16) : parseInt(q, 10);
+                if (!isNaN(o) && o >= 0 && o < elfData.length) {
+                    highlightBytes(o, 1);
+                    document.getElementById('searchResults').textContent = 'Jumped to offset 0x' + o.toString(16);
+                } else { document.getElementById('searchResults').textContent = 'Invalid offset' }
+                return;
+            }
+            if (searchMode === 'hex') {
+                const hb = q.replace(/[^0-9a-fA-F]/g, '');
+                if (hb.length % 2 !== 0) { document.getElementById('searchResults').textContent = 'Invalid hex (must be even length)'; return }
+                const pattern = [];
+                for (let i = 0; i < hb.length; i += 2)pattern.push(parseInt(hb.substr(i, 2), 16));
+                for (let i = 0; i <= elfData.length - pattern.length; i++) {
+                    let match = true;
+                    for (let j = 0; j < pattern.length; j++) { if (elfData[i + j] !== pattern[j]) { match = false; break } }
+                    if (match) searchMatches.push({ offset: i, size: pattern.length });
+                }
+            } else if (searchMode === 'string') {
+                const bytes = [];
+                for (let i = 0; i < q.length; i++)bytes.push(q.charCodeAt(i));
+                for (let i = 0; i <= elfData.length - bytes.length; i++) {
+                    let match = true;
+                    for (let j = 0; j < bytes.length; j++) { if (elfData[i + j] !== bytes[j]) { match = false; break } }
+                    if (match) searchMatches.push({ offset: i, size: bytes.length });
+                }
+            }
+            if (searchMatches.length > 0) {
+                currentMatchIndex = 0; highlightSearchMatches(); navigateToMatch(0);
+                document.getElementById('searchResults').textContent = 'Found ' + searchMatches.length + ' match' + (searchMatches.length > 1 ? 'es' : '') + ' (highlighting max 100)';
+                document.getElementById('prevBtn').disabled = false;
+                document.getElementById('nextBtn').disabled = false;
+            } else {
+                document.getElementById('searchResults').textContent = 'No matches found';
+                document.getElementById('prevBtn').disabled = true;
+                document.getElementById('nextBtn').disabled = true;
+            }
+        }
 
-function clearSearchHighlights(){
-document.querySelectorAll('.hex-byte.search-match,.hex-byte.search-current,.ascii-char.search-match,.ascii-char.search-current').forEach(e=>e.classList.remove('search-match','search-current'));
-}
+        function clearSearchHighlights() {
+            document.querySelectorAll('.hex-byte.search-match,.hex-byte.search-current,.ascii-char.search-match,.ascii-char.search-current').forEach(e => e.classList.remove('search-match', 'search-current'));
+        }
 
-function highlightSearchMatches(){
-const maxHighlight=100;
-searchMatches.slice(0,maxHighlight).forEach((m,i)=>{
-for(let j=0;j<m.size;j++){
-const o=m.offset+j;
-const hb=document.querySelector('.hex-byte[data-offset="'+o+'"]');
-const ac=document.querySelector('.ascii-char[data-offset="'+o+'"]');
-if(hb)hb.classList.add(i===currentMatchIndex?'search-current':'search-match');
-if(ac)ac.classList.add(i===currentMatchIndex?'search-current':'search-match');
-}
-});
-}
+        function highlightSearchMatches() {
+            const maxHighlight = 100;
+            searchMatches.slice(0, maxHighlight).forEach((m, i) => {
+                for (let j = 0; j < m.size; j++) {
+                    const o = m.offset + j;
+                    const hb = document.querySelector('.hex-byte[data-offset="' + o + '"]');
+                    const ac = document.querySelector('.ascii-char[data-offset="' + o + '"]');
+                    if (hb) hb.classList.add(i === currentMatchIndex ? 'search-current' : 'search-match');
+                    if (ac) ac.classList.add(i === currentMatchIndex ? 'search-current' : 'search-match');
+                }
+            });
+        }
 
-function navigateToMatch(i){
-if(i<0||i>=searchMatches.length)return;
-const m=searchMatches[i];
-const fb=document.querySelector('.hex-byte[data-offset="'+m.offset+'"]');
-if(fb){const l=fb.closest('.hex-line');if(l)l.scrollIntoView({behavior:'smooth',block:'center'})}
-document.getElementById('selectedOffset').textContent='Match '+(i+1)+'/'+searchMatches.length+': 0x'+m.offset.toString(16);
-}
+        function navigateToMatch(i) {
+            if (i < 0 || i >= searchMatches.length) return;
+            const m = searchMatches[i];
+            const fb = document.querySelector('.hex-byte[data-offset="' + m.offset + '"]');
+            if (fb) { const l = fb.closest('.hex-line'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'center' }) }
+            document.getElementById('selectedOffset').textContent = 'Match ' + (i + 1) + '/' + searchMatches.length + ': 0x' + m.offset.toString(16);
+        }
 
-function previousMatch(){
-if(currentMatchIndex>0){
-clearSearchHighlights();currentMatchIndex--;
-highlightSearchMatches();navigateToMatch(currentMatchIndex);
-}
-}
+        function previousMatch() {
+            if (currentMatchIndex > 0) {
+                clearSearchHighlights(); currentMatchIndex--;
+                highlightSearchMatches(); navigateToMatch(currentMatchIndex);
+            }
+        }
 
-function nextMatch(){
-if(currentMatchIndex<searchMatches.length-1){
-clearSearchHighlights();currentMatchIndex++;
-highlightSearchMatches();navigateToMatch(currentMatchIndex);
-}
-}
+        function nextMatch() {
+            if (currentMatchIndex < searchMatches.length - 1) {
+                clearSearchHighlights(); currentMatchIndex++;
+                highlightSearchMatches(); navigateToMatch(currentMatchIndex);
+            }
+        }
 
-function setLanguage(l){
-currentLanguage=l;
-document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
-event.target.classList.add('active');
-}
+        function setLanguage(l) {
+            currentLanguage = l;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
 
-function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
-</script>
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML }
+    </script>
 </body>
+
 </html>
